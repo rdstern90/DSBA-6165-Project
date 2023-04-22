@@ -1,1 +1,32 @@
-https://drive.google.com/drive/folders/1-xtyCZMhxYDrt5r6rCRGgflJOD_3HCOh
+https://drive.google.com/drive/folders/1-xtyCZMhxYDrt5r6rCRGgflJOD_3HCOh\
+
+
+Download with gdown and unzip:
+
+########################################
+### Manually labeled training images ###
+########################################
+
+!gdown -qq 1_uqK44fFQu6MFgMce-xiuuWIbxyxSS-9
+!unzip -qq manual_training_data_000.zip
+
+!gdown -qq 1KSj9Rqa2E87IiAkvREyhKXObCOT6Xbbx
+!unzip -qq manual_training_data_060.zip
+
+!gdown -qq 1IsGbvCtZ-b_CO8efTnbBQEtC1DlyNSCw
+!unzip -qq manual_training_data_085.zip
+
+
+########################################
+### Manually labeled testing images ####
+########################################
+
+!gdown -qq 1cd54n-E6oSeFJsgscYPx_kOb4pNf61rj
+!unzip -qq manual_test_data.zip
+
+########################################
+### Generated training images ##########
+########################################
+
+!gdown -qq 13ZPw7oAs8HOf9SV3AGRqfcBawGSaBuFL
+!unzip -qq auto_generated_training_set3.zip
