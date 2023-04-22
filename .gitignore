@@ -2,4 +2,5 @@
 *.pyo
 
 /_ignore
-/data
+/data/auto_generated_symbols
+/data/auto_generated_training
