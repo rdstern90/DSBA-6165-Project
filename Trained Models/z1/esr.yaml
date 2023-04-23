@@ -1,0 +1,7 @@
+train: ./yolov7/train
+val: ./yolov7/valid
+test: ./yolov7/test
+
+# Classes
+nc: 2  # number of classes
+names: ['duplex', 'quad']
