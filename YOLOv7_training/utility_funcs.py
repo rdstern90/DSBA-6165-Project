@@ -111,7 +111,5 @@ def plot_results_simple(results_file, start=0, stop=0, annotate_best=False):
             continue # skip one subplot
 
 
-    # ax[1].legend()
-
-    # plt.show()
-    return fig
+    plt.show()
+    return
