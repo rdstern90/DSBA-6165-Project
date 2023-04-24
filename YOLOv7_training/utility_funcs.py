@@ -1,4 +1,12 @@
-#
+import os
+import shutil
+import numpy as np
+import pandas as pd
+from PIL import Image
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+
+
 # This function takes an IMAGE path and displays it. The resulting figure size is proportional to the image size
 # If labels=True, the functions tries to find the corresponding label based on the same filename and folder structure
 # expected by the yolov7-model:
@@ -6,11 +14,8 @@
 #       img_path ="/somedir/anotherdir/images/filename.png"
 #       lbl_path ="/somedir/anotherdir/labels/filename.txt"
 #
-
 def show_img(path, labels=False, clr="blue"):
-    import numpy as np
-    from PIL import Image
-    import matplotlib.pyplot as plt
+
 
     img = Image.open(path)
 
@@ -61,14 +66,76 @@ def show_img(path, labels=False, clr="blue"):
         
     plt.show()
 
+    
+    
+def move_images(src_paths, train, valid, test):
 
+  if not os.path.isdir("yolov7/train/labels"):
+      os.makedirs("yolov7/train/labels"), os.makedirs("yolov7/train/images")
+  if not os.path.isdir("yolov7/valid/labels"):
+      os.makedirs("yolov7/valid/labels"), os.makedirs("yolov7/valid/images")
+  if not os.path.isdir("yolov7/test/labels"):    
+      os.makedirs("yolov7/test/labels"), os.makedirs("yolov7/test/images")
+
+  for i, file_set in enumerate([train, valid, test]):
+
+    if len(file_set) == 0:
+        continue
+
+    for file in file_set:
+        img_src = src_paths[0] + file
+        txt_src = src_paths[1] + file[:-4]+".txt"
+
+        if i == 0:
+            img_dst = "yolov7/train/images/"+file
+            txt_dst = "yolov7/train/labels/"+file[:-4]+".txt"
+        elif i == 1:
+            img_dst = "yolov7/valid/images/"+file
+            txt_dst = "yolov7/valid/labels/"+file[:-4]+".txt"
+        else:
+            img_dst = "yolov7/test/images/"+file
+            txt_dst = "yolov7/test/labels/"+file[:-4]+".txt"
+
+
+        os.rename(img_src, img_dst)
+        os.rename(txt_src, txt_dst)
+
+  shutil.rmtree(src_paths[0])
+  shutil.rmtree(src_paths[1])
+    
+    
+def create_stratified_samples(csv, train_frac, valid_frac, test_frac):
+
+    df = pd.read_csv(csv)
+    !rm manually_labeled_images.csv
+
+    dfg = pd.concat([df["image"], pd.get_dummies(df["class_id"], "cid")], axis=1)
+    dfg = dfg.groupby(["image"]).max()
+
+    cid_combination = []
+    for _, row in dfg.iterrows():
+        cid_combination.append(str(row["cid_-1.0"])+"-"+str(row["cid_0.0"])+"-" + str(row["cid_1.0"]))
+    dfg["cid_combination"] = cid_combination
+
+
+    x = dfg.index.values
+    y = dfg["cid_combination"]
+    
+    if test_frac != 0:
+        train_files, test_files, y_train, _ = train_test_split(x, y, test_size=test_frac, stratify=y, random_state=42)
+        train_files, valid_files, _, _ = train_test_split(train_files, y_train, test_size=valid_frac/(1-test_frac), stratify=y_train, random_state=random_state)
+
+    else:
+        train_files, valid_files, _, _ = train_test_split(x, y, test_size=valid_frac, stratify=y, random_state=42)
+        test_files = []
+
+    print(f"n train: {len(train_files)}, n valid: {len(valid_files)}, n test: {len(test_files)} (ntot: {len(x)})")
+
+    return train_files, valid_files, test_files
 
 
 # adopted from function in nhttps://github.com/WongKinYiu/yolov7/blob/main/utils/torch_utils.py
-
 def plot_results_simple(results_file, start=0, stop=0, annotate_best=False):
-    import numpy as np
-    import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(2, 4, figsize=(12, 6), tight_layout=True)
     ax = ax.ravel()
