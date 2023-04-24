@@ -102,12 +102,15 @@ def move_images(src_paths, train, valid, test):
 
   shutil.rmtree(src_paths[0])
   shutil.rmtree(src_paths[1])
+
+
+
+
     
-    
-def create_stratified_samples(csv, train_frac, valid_frac, test_frac):
+def create_stratified_samples(csv, train_frac, valid_frac, test_frac, random_state=42):
 
     df = pd.read_csv(csv)
-    !rm manually_labeled_images.csv
+    os.remove(csv)
 
     dfg = pd.concat([df["image"], pd.get_dummies(df["class_id"], "cid")], axis=1)
     dfg = dfg.groupby(["image"]).max()
@@ -126,12 +129,14 @@ def create_stratified_samples(csv, train_frac, valid_frac, test_frac):
         train_files, valid_files, _, _ = train_test_split(train_files, y_train, test_size=valid_frac/(1-test_frac), stratify=y_train, random_state=random_state)
 
     else:
-        train_files, valid_files, _, _ = train_test_split(x, y, test_size=valid_frac, stratify=y, random_state=42)
+        train_files, valid_files, _, _ = train_test_split(x, y, test_size=valid_frac, stratify=y, random_state=random_state)
         test_files = []
 
     print(f"n train: {len(train_files)}, n valid: {len(valid_files)}, n test: {len(test_files)} (ntot: {len(x)})")
 
     return train_files, valid_files, test_files
+
+
 
 
 # adopted from function in nhttps://github.com/WongKinYiu/yolov7/blob/main/utils/torch_utils.py
