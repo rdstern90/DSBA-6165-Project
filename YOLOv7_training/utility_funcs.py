@@ -14,8 +14,7 @@ from sklearn.model_selection import train_test_split
 #       img_path ="/somedir/anotherdir/images/filename.png"
 #       lbl_path ="/somedir/anotherdir/labels/filename.txt"
 #
-def show_img(path, labels=False, clr="blue"):
-
+def show_img(path, pred_labelpath='', labels=False,  clr1="blue", clr2="red"):
 
     img = Image.open(path)
 
@@ -28,42 +27,63 @@ def show_img(path, labels=False, clr="blue"):
     plt.xticks([])
     plt.yticks([])
 
-    if labels==True:
+    if (labels == True) or (pred_labelpath != ''):
 
-        try:
-            labelpath = path.replace("images", "labels")
-            labelpath = labelpath[:-4]+".txt"
-        except:
-            labelpath = labelpath[:-4]+".txt"
+        labelpaths = [path]
 
-        try:
-            with open(labelpath, mode="r") as f:
-                lines = f.readlines()
-                for line in lines:
-                    content = line.split()
-                    class_id = int(content[0])
-                    xc_rel = float(content[1])
-                    yc_rel = float(content[2])
-                    w_rel = float(content[3])
-                    h_rel = float(content[4])
+        if pred_labelpath != '':
+            labelpaths += [pred_labelpath]
 
-                    wbb = w_rel*w
-                    hbb = h_rel*h
+        clrs = [clr2, clr1]
 
-                    xmin = (xc_rel*w) - (0.5*wbb)
-                    xmax = (xc_rel*w) + (0.5*wbb)
-                    ymin = (yc_rel*h) - (0.5*hbb)
-                    ymax = (yc_rel*h) + (0.5*hbb)
-
-
-                    plt.plot([xmin, xmax], [ymin, ymin], color=clr, linewidth=1)
-                    plt.plot([xmin, xmin], [ymax, ymin], color=clr, linewidth=1)
-                    plt.plot([xmax, xmax], [ymax, ymin], color=clr, linewidth=1)
-                    plt.plot([xmin, xmax], [ymax, ymax], color=clr, linewidth=1)
-                    plt.annotate(str(class_id), (xmin, ymin))
-        except:
-            print("no label file found")
+        for i in range(len(labelpaths)):
+            try:
+                labelpaths[i] = labelpaths[i].replace("images", "labels")
+                labelpaths[i] = labelpaths[i][:-4]+".txt"
+            except:
+                labelpaths[i] = labelpaths[i][:-4]+".txt"
         
+        
+        if len(labelpaths) == 2:
+            print(labelpaths)
+            linewidths = [1, 2]
+            clrs = [clr2, clr1]
+        else:
+            linewidths = [1]
+            clrs = [clr1]
+
+        labelpaths.reverse()
+
+        for i, path in enumerate(labelpaths):
+            try:
+                with open(path, mode="r") as f:
+                    lines = f.readlines()
+                    for line in lines:
+                        content = line.split()
+                        class_id = int(content[0])
+                        xc_rel = float(content[1])
+                        yc_rel = float(content[2])
+                        w_rel = float(content[3])
+                        h_rel = float(content[4])
+
+                        wbb = w_rel*w
+                        hbb = h_rel*h
+
+                        xmin = (xc_rel*w) - (0.5*wbb)
+                        xmax = (xc_rel*w) + (0.5*wbb)
+                        ymin = (yc_rel*h) - (0.5*hbb)
+                        ymax = (yc_rel*h) + (0.5*hbb)
+
+
+                        plt.plot([xmin, xmax], [ymin, ymin], color=clrs[i], linewidth=linewidths[i])
+                        plt.plot([xmin, xmin], [ymax, ymin], color=clrs[i], linewidth=linewidths[i])
+                        plt.plot([xmax, xmax], [ymax, ymin], color=clrs[i], linewidth=linewidths[i])
+                        plt.plot([xmin, xmax], [ymax, ymax], color=clrs[i], linewidth=linewidths[i])
+                        if len(labelpaths)==1:
+                            plt.annotate(str(class_id), (xmin, ymin), c=clrs[i])
+            except:
+                print(f"label-file: '{path}' not found")
+                
     plt.show()
 
     
