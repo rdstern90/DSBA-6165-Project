@@ -60,3 +60,58 @@ def show_img(path, labels=False, clr="blue"):
             print("no label file found")
         
     plt.show()
+
+
+
+
+# adopted from function in nhttps://github.com/WongKinYiu/yolov7/blob/main/utils/torch_utils.py
+
+def plot_results_simple(results_file, start=0, stop=0, annotate_best=False):
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(2, 4, figsize=(12, 6), tight_layout=True)
+    ax = ax.ravel()
+    s = ['box-loss', 'obj-loss', 'cls-loss', '', 'Precision', 'Recall', 'mAP@0.5', 'mAP@0.5:0.95']
+    results = np.loadtxt(results_file, usecols=[2, 3, 4, 12, 13, 14, 8, 9, 10, 11], ndmin=2).T
+    n = results.shape[1]  # number of rows
+    x = range(start, min(stop, n) if stop else n)
+
+    for i in range(8):
+
+        if i in [0, 1, 2]:
+            y = results[i, x]
+            y[y == 0] = np.nan  # don't show zero loss values
+            ax[i].plot(x, y, marker='.', linewidth=1, markersize=2, c='orange')
+            y = results[i+3, x]
+            ax[i].plot(x, y, marker='.', linewidth=1, markersize=2)
+            ax[i].set_title(s[i])
+            ax[i].legend(['train', 'val'])
+
+            # adjust yaxis
+            avg_val = np.nanmean(results[i, x] + results[i+3, x])
+            max_val = np.nanmax(results[i, x] + results[i+3, x])
+            if 4*avg_val < max_val:
+                ymax = max(np.nanquantile(results[i, x],0.95), np.nanquantile(results[i+3, x],0.95))
+                ax[i].set_ylim((0,ymax))
+
+        elif i in [4, 5, 6, 7]:
+            y = results[i+2, x]
+            ax[i].plot(x, y, marker='.', linewidth=1, markersize=2)
+            ax[i].set_title(s[i])
+            ax[i].legend(['val'])
+
+            if annotate_best == True:
+                max_yval = max(y)
+                x_indx = [i for i, val in enumerate(y) if val == max(y)][0]
+
+                ax[i].annotate(str(round(max_yval,3)), (x[x_indx], max_yval), c='red')
+
+        elif i == 3:
+            continue # skip one subplot
+
+
+    # ax[1].legend()
+
+    # plt.show()
+    return fig
