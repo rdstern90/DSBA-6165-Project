@@ -34,7 +34,7 @@ def show_img(path, pred_labelpath='', labels=False,  clr1="blue", clr2="red"):
         if pred_labelpath != '':
             labelpaths += [pred_labelpath]
 
-        clrs = [clr2, clr1]
+        clrs = [clr1, clr2]
 
         for i in range(len(labelpaths)):
             try:
@@ -46,13 +46,13 @@ def show_img(path, pred_labelpath='', labels=False,  clr1="blue", clr2="red"):
         
         if len(labelpaths) == 2:
             print(labelpaths)
-            linewidths = [1, 2]
-            clrs = [clr2, clr1]
+            linewidths = [4, 1]
+            bbxinc = [3, 0]
+
         else:
             linewidths = [1]
-            clrs = [clr1]
+            bbxinc = [1]
 
-        labelpaths.reverse()
 
         for i, path in enumerate(labelpaths):
             try:
@@ -69,10 +69,10 @@ def show_img(path, pred_labelpath='', labels=False,  clr1="blue", clr2="red"):
                         wbb = w_rel*w
                         hbb = h_rel*h
 
-                        xmin = (xc_rel*w) - (0.5*wbb)
-                        xmax = (xc_rel*w) + (0.5*wbb)
-                        ymin = (yc_rel*h) - (0.5*hbb)
-                        ymax = (yc_rel*h) + (0.5*hbb)
+                        xmin = (xc_rel*w) - (0.5*wbb) - bbxinc[i]
+                        xmax = (xc_rel*w) + (0.5*wbb) + bbxinc[i]
+                        ymin = (yc_rel*h) - (0.5*hbb) - bbxinc[i]
+                        ymax = (yc_rel*h) + (0.5*hbb) + bbxinc[i]
 
 
                         plt.plot([xmin, xmax], [ymin, ymin], color=clrs[i], linewidth=linewidths[i])
@@ -86,7 +86,141 @@ def show_img(path, pred_labelpath='', labels=False,  clr1="blue", clr2="red"):
                 
     plt.show()
 
+
+
+
+
+def show_img2(imgdir, pred_labeldir='', num_imgs=1, labels=False,  clr1="blue", clr2="red"):
+    # fancier version of show_img which can show up to 6 images in a subplot
+    # can show true and predicted boundingboxes
+    # if a list of imagepaths is input instead of an imagedirectory, specific images can be shown and compared
     
+    import matplotlib.pyplot as plt
+    from PIL import Image
+    import numpy as np
+    
+
+    if type(imgdir) == str:     
+        imgfiles = random.sample(os.listdir(imgdir), num_imgs)
+        imgpaths = [imgdir+file for file in imgfiles]
+
+    else: # a list of specific image paths is input. Note: the full path is required, not only filenames
+        imgpaths = imgdir
+        num_imgs = len(imgpaths)
+        
+
+    if (labels == True) or (pred_labeldir != ''):
+        truelabelpaths = imgpaths.copy()
+        for i in range(len(imgpaths)):
+            try:
+                truelabelpaths[i] = truelabelpaths[i].replace("images", "labels")
+                truelabelpaths[i] = truelabelpaths[i][:-4]+".txt"
+            except:
+                truelabelpaths[i] = truelabelpaths[i][:-4]+".txt"
+
+        labelpaths = [truelabelpaths]
+    else:
+        labelpaths = []
+
+    
+    if pred_labeldir != '':
+        filenames = [path[path.rindex("/"):-4] for path in imgpaths]
+        predlabelpaths = [pred_labeldir+filename+".txt" for filename in filenames]
+        labelpaths = labelpaths + [predlabelpaths]
+
+    
+    img = Image.open(imgpaths[0])
+    w,h =img.size
+    fig_w = int(np.interp(w, [500, 5500], [5, 22]))
+    fig_h = int(np.interp(h, [500, 5500], [5, 22]))
+    
+
+    if num_imgs == 1:
+        # plot single image
+        fig, ax = plt.subplots(figsize=(fig_w, fig_h))
+        ax.imshow(np.asarray(img))
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+    else:
+        ncols = {1:1, 2:2, 3:3, 4:3, 5:3, 6:3}[num_imgs]
+        nrows= {1:1, 2:1, 3:1, 4:2, 5:2, 6:2}[num_imgs]
+        fig, ax = plt.subplots(nrows, ncols, figsize=(4.5*ncols, 4.5*nrows))
+        ax = ax.ravel()
+        for i in range(num_imgs if num_imgs <=3 else 6):
+            if i < num_imgs:
+                ax[i].imshow(np.asarray(Image.open(imgpaths[i])))   
+            ax[i].set_xticks([])
+            ax[i].set_yticks([])
+
+
+
+    clrs = [clr1, clr2] # clr1: true labels and bounding boxes, clr2: predicted
+
+    if len(labelpaths) == 2:  # with both true and predcited bbxs, increase linewidth and size for true
+        linewidths = [4, 1]
+        bbxinc = [3, 0]
+
+    else:
+        linewidths = [1]
+        bbxinc = [1]
+
+
+    for i, paths in enumerate(labelpaths):
+        for j, path in enumerate(paths):
+            try:
+                with open(path, mode="r") as f:
+                    lines = f.readlines()
+                    for line in lines:
+                        content = line.split()
+                        class_id = int(content[0])
+                        xc_rel = float(content[1])
+                        yc_rel = float(content[2])
+                        w_rel = float(content[3])
+                        h_rel = float(content[4])
+
+                        wbb = w_rel*w
+                        hbb = h_rel*h
+
+                        xmin = (xc_rel*w) - (0.5*wbb) - bbxinc[i]
+                        xmax = (xc_rel*w) + (0.5*wbb) + bbxinc[i]
+                        ymin = (yc_rel*h) - (0.5*hbb) - bbxinc[i]
+                        ymax = (yc_rel*h) + (0.5*hbb) + bbxinc[i]
+
+
+                        if num_imgs > 1:
+                            ax[j].plot([xmin, xmax], [ymin, ymin], color=clrs[i], linewidth=linewidths[i])
+                            ax[j].plot([xmin, xmin], [ymax, ymin], color=clrs[i], linewidth=linewidths[i])
+                            ax[j].plot([xmax, xmax], [ymax, ymin], color=clrs[i], linewidth=linewidths[i])
+                            ax[j].plot([xmin, xmax], [ymax, ymax], color=clrs[i], linewidth=linewidths[i])
+                            if len(labelpaths)==1:
+                                ax[j].annotate(str(class_id), (xmin, ymin), (xmin, ymin-3), c=clrs[i])
+                        else:
+                            ax.plot([xmin, xmax], [ymin, ymin], color=clrs[i], linewidth=linewidths[i])
+                            ax.plot([xmin, xmin], [ymax, ymin], color=clrs[i], linewidth=linewidths[i])
+                            ax.plot([xmax, xmax], [ymax, ymin], color=clrs[i], linewidth=linewidths[i])
+                            ax.plot([xmin, xmax], [ymax, ymax], color=clrs[i], linewidth=linewidths[i])
+                            if len(labelpaths)==1:
+                                ax.annotate(str(class_id), (xmin, ymin), (xmin, ymin-3), c=clrs[i])
+
+                    if (num_imgs > 1) and (len(labelpaths) != 1) and (i == 0):
+                        ax[j].text(0, -0.04, str(path), size=12, ha="left", transform=ax[j].transAxes, color=clrs[i])  #path to true label
+
+                    elif (num_imgs > 1) and (len(labelpaths) != 1) and (i == 1):
+                        ax[j].text(0, -0.08, str(path), size=12, ha="left", transform=ax[j].transAxes, color=clrs[i])  #path to predicted label
+            
+            except:
+                if (num_imgs > 1) and (len(labelpaths) != 1) and (i == 0):
+                    ax[j].text(0, -0.04, "Background image", size=12, ha="left", transform=ax[j].transAxes)  #path to true label
+                    
+                elif (num_imgs > 1) and (len(labelpaths) != 1) and (i == 1):
+                    ax[j].text(0, -0.08, "No labels predicted", size=12, ha="left", transform=ax[j].transAxes)  #path to predicted label
+    
+    fig.tight_layout()
+
+
+
+
     
 def move_images(src_paths, train, valid, test):
 
