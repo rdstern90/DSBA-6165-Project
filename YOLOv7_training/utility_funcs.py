@@ -1,4 +1,5 @@
 import os
+import random
 import shutil
 import numpy as np
 import pandas as pd
@@ -94,7 +95,7 @@ def show_img2(imgdir, pred_labeldir='', num_imgs=1, labels=False,  clr1="blue", 
     # fancier version of show_img which can show up to 6 images in a subplot
     # can show true and predicted boundingboxes
     # if a list of imagepaths is input instead of an imagedirectory, specific images can be shown and compared
-    
+
     import matplotlib.pyplot as plt
     from PIL import Image
     import numpy as np
@@ -193,14 +194,14 @@ def show_img2(imgdir, pred_labeldir='', num_imgs=1, labels=False,  clr1="blue", 
                             ax[j].plot([xmin, xmin], [ymax, ymin], color=clrs[i], linewidth=linewidths[i])
                             ax[j].plot([xmax, xmax], [ymax, ymin], color=clrs[i], linewidth=linewidths[i])
                             ax[j].plot([xmin, xmax], [ymax, ymax], color=clrs[i], linewidth=linewidths[i])
-                            if len(labelpaths)==1:
+                            if (len(labelpaths)==1) or (i==1):
                                 ax[j].annotate(str(class_id), (xmin, ymin), (xmin, ymin-3), c=clrs[i])
                         else:
                             ax.plot([xmin, xmax], [ymin, ymin], color=clrs[i], linewidth=linewidths[i])
                             ax.plot([xmin, xmin], [ymax, ymin], color=clrs[i], linewidth=linewidths[i])
                             ax.plot([xmax, xmax], [ymax, ymin], color=clrs[i], linewidth=linewidths[i])
                             ax.plot([xmin, xmax], [ymax, ymax], color=clrs[i], linewidth=linewidths[i])
-                            if len(labelpaths)==1:
+                            if (len(labelpaths)==1) or (i==1):
                                 ax.annotate(str(class_id), (xmin, ymin), (xmin, ymin-3), c=clrs[i])
 
                     if (num_imgs > 1) and (len(labelpaths) != 1) and (i == 0):
