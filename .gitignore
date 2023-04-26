@@ -4,3 +4,5 @@
 /_ignore
 /data/auto_generated_symbols
 /data/auto_generated_training
+/YOLOv7_training/runs
+/YOLOv7_training/yolov7
