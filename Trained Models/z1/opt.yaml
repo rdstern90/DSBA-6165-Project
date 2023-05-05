@@ -1,7 +1,7 @@
 weights: yolov7_training.pt
 cfg: yolov7/cfg/training/esr_v1.yaml
 data: yolov7/data/esr.yaml
-hyp: yolov7/data/hyp.esr.p5.yaml
+hyp: .\yolov7\data\hyp.scratch.p5.yaml
 epochs: 200
 batch_size: 32
 img_size:
@@ -25,7 +25,7 @@ local_rank: -1
 workers: 8
 project: runs/train
 entity: null
-name: run_z2
+name: run_z1
 exist_ok: false
 quad: false
 linear_lr: false
@@ -39,5 +39,5 @@ freeze:
 v5_metric: false
 world_size: 1
 global_rank: -1
-save_dir: runs\train\run_z22
+save_dir: runs\train\run_z1
 total_batch_size: 32
